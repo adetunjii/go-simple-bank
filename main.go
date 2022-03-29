@@ -4,20 +4,20 @@ import (
 	"database/sql"
 	"github.com/Adetunjii/simplebank/api"
 	db "github.com/Adetunjii/simplebank/db/repository"
+	"github.com/Adetunjii/simplebank/util"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"log"
 
 )
 
-const (
-	dbDriver = "pgx"
-	dbSource = "postgresql://teej4y:password@localhost:5432/simplebank?sslmode=disable"
-	address = "0.0.0.0:8080"
-)
-
 
 func main() {
-	connection, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("Cannot load config", err)
+	}
+
+	connection, err := sql.Open(config.DBDriver, config.DBSource)
 
 	if err != nil {
 		log.Fatal("Cannot connect to the database::: ", err)
@@ -26,7 +26,7 @@ func main() {
 	store := db.CreateNewStore(connection)
 	server := api.CreateNewServer(store)
 
-	err = server.StartServer(address)
+	err = server.StartServer(config.ServerAddress)
 	if err != nil {
 		log.Fatal("Cannot start server:", err)
 	}
