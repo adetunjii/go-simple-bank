@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  DB_DRIVER: pgx
+  DB_SOURCE: postgresql://postgres:secret@localhost:5432/simplebank?sslmode=disable
+
 jobs:
 
   test:
@@ -33,7 +37,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-you
+
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
