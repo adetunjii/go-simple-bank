@@ -6,9 +6,7 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  DB_DRIVER: pgx
-  DB_SOURCE: postgresql://postgres:secret@localhost:5432/simplebank?sslmode=disable
+
 
 jobs:
 
@@ -55,3 +53,6 @@ jobs:
 
       - name: Test
         run: make test
+        env:
+          DB_DRIVER: pgx
+          DB_SOURCE: postgresql://postgres:secret@localhost:5432/simplebank?sslmode=disable
