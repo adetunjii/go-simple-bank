@@ -91,7 +91,7 @@ func (r *Repository) GetAccountForUpdate(ctx context.Context, id int64) (Account
 	}
 	defer rows.Close()
 
- 	var items []Account
+	items := []Account{}
 
  	for rows.Next() {
  		var i Account
