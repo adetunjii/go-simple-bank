@@ -43,7 +43,6 @@ func (store *Store) execTxn(ctx context.Context, fn func(*Repository) error) err
 	return txn.Commit()
 }
 
-
 type TransferTxnParams struct {
 	SourceAccountID int64 	`json:"source_account_id"`
 	DestinationAccountID int64 	`json:"destination_account_id"`
@@ -105,7 +104,68 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxnParams) (Tran
 			return err
 		}
 
-		// go:TODO update account balance and transactions to successful
+
+		//go:TODO: Refactor this block of code
+
+		if arg.SourceAccountID < arg.DestinationAccountID {
+			sourceAccount, err := r.GetAccountForUpdate(ctx, arg.SourceAccountID)
+			if err != nil {
+				return err
+			}
+
+
+			result.SourceAccount, err = r.UpdateAccount(ctx, UpdateAccountDto{
+				ID:      arg.SourceAccountID,
+				Balance: sourceAccount.Balance - arg.Amount,
+			})
+
+			if err != nil {
+				return err
+			}
+
+			destinationAccount, err := r.GetAccountForUpdate(ctx, arg.DestinationAccountID)
+			if err != nil {
+				return err
+			}
+
+			result.DestinationAccount, err = r.UpdateAccount(ctx, UpdateAccountDto{
+				ID:      arg.DestinationAccountID,
+				Balance: destinationAccount.Balance + arg.Amount,
+			})
+			if err != nil {
+				return err
+			}
+		} else {
+			destinationAccount, err := r.GetAccountForUpdate(ctx, arg.DestinationAccountID)
+			if err != nil {
+				return err
+			}
+
+			result.DestinationAccount, err = r.UpdateAccount(ctx, UpdateAccountDto{
+				ID:      arg.DestinationAccountID,
+				Balance: destinationAccount.Balance + arg.Amount,
+			})
+			if err != nil {
+				return err
+			}
+
+			sourceAccount, err := r.GetAccountForUpdate(ctx, arg.SourceAccountID)
+			if err != nil {
+				return err
+			}
+
+
+			result.SourceAccount, err = r.UpdateAccount(ctx, UpdateAccountDto{
+				ID:      arg.SourceAccountID,
+				Balance: sourceAccount.Balance - arg.Amount,
+			})
+
+			if err != nil {
+				return err
+			}
+		}
+
+
 
 		return nil
 	})
