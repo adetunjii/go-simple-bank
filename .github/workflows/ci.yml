@@ -20,8 +20,8 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_USER: Teej4y
-          POSTGRES_PASSWORD: password
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: secret
           POSTGRES_DB: simplebank
         ports:
           - 5432:5432
