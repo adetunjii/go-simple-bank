@@ -3,20 +3,29 @@ package api
 import (
 	. "github.com/Adetunjii/simplebank/db/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 type Server struct {
-	store *Store
+	store IStore
 	router *gin.Engine
 }
 
-func CreateNewServer(store *Store) *Server {
+func CreateNewServer(store IStore) *Server {
 	server := &Server {store: store}
 	router := gin.Default()
+
+	if validator, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		validator.RegisterValidation("currency", validCurrency)
+	}
 
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccountByID)
 	router.GET("/accounts", server.listAccounts)
+
+	//TRANSFERS
+	router.POST("/transfers", server.createTransfer)
 
 	server.router = router
 	return server

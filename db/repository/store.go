@@ -8,13 +8,19 @@ import (
 	"github.com/Adetunjii/simplebank/util"
 )
 
+
+type IStore interface {
+	IRepository
+	TransferTx(ctx context.Context, arg TransferTxnParams) (TransferTxnResult, error)
+}
+
 // An extension to the repository where we can run all queries as well as transactions
 type Store struct {
 	*Repository			//embed repository
 	db *sql.DB
 }
 
-func CreateNewStore(db *sql.DB) *Store {
+func CreateNewStore(db *sql.DB) IStore {
 	return &Store {
 		db: db,
 		Repository: CreateNew(db),
