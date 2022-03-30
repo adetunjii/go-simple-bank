@@ -16,9 +16,15 @@ func CreateNewServer(store IStore) *Server {
 	server := &Server {store: store}
 	router := gin.Default()
 
+
+
+	// Create custom validator
 	if validator, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		validator.RegisterValidation("currency", validCurrency)
 	}
+
+	router.POST("/users", server.createUser)
+
 
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccountByID)
