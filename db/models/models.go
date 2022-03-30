@@ -45,3 +45,11 @@ type Transfer struct {
 	Reference string			`json:"reference"`
 	CreatedAt time.Time 		`json:"created_at"`
 }
+
+type User struct {
+	Username    string   	`json:"username"`
+	Password  	string    	`json:"balance"`
+	FullName 	string 		`json:"full_name"`
+	Email 	 	string   	`json:"currency"`
+	CreatedAt   time.Time 	`json:"created_at"`
+}

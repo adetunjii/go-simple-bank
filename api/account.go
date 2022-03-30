@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	db "github.com/Adetunjii/simplebank/db/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+	_ "github.com/jackc/pgx/v4"
 	"net/http"
 )
 
@@ -28,6 +31,15 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
+
+		if pgxErr, ok := err.(*pgconn.PgError); ok {
+			switch pgxErr.Code {
+				case pgerrcode.ForeignKeyViolation, pgerrcode.UniqueViolation:
+					ctx.JSON(http.StatusForbidden, errorResponse(err))
+					return
+			}
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

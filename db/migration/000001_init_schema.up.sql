@@ -1,3 +1,4 @@
+
 CREATE TABLE "accounts"
 (
     "id"         bigserial PRIMARY KEY,
@@ -30,6 +31,7 @@ CREATE TABLE "transfers"
     "created_at"      timestamptz DEFAULT (now())
 );
 
+
 ALTER TABLE "transactions"
     ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id");
 
@@ -38,6 +40,7 @@ ALTER TABLE "transfers"
 
 ALTER TABLE "transfers"
     ADD FOREIGN KEY ("destination_account_id") REFERENCES "accounts" ("id");
+
 
 CREATE
 INDEX ON "accounts" ("owner");
