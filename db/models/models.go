@@ -50,6 +50,6 @@ type User struct {
 	Username    string   	`json:"username"`
 	Password  	string    	`json:"balance"`
 	FullName 	string 		`json:"full_name"`
-	Email 	 	string   	`json:"currency"`
+	Email 	 	string   	`json:"email"`
 	CreatedAt   time.Time 	`json:"created_at"`
 }

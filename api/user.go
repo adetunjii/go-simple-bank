@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	db "github.com/Adetunjii/simplebank/db/repository"
 	"github.com/Adetunjii/simplebank/util"
 	"github.com/gin-gonic/gin"
@@ -18,9 +19,9 @@ type createUserRequest struct {
 }
 
 type createUserResponse struct {
-	Username string 	`json:"username" binding:"required,alphanum"`
-	FullName string 	`json:"full_name" binding:"required"`
-	Email string 		`json:"email" binding:"required,email"`
+	Username string 	`json:"username"`
+	FullName string 	`json:"full_name"`
+	Email string 		`json:"email"`
 	CreatedAt time.Time 	`json:"created_at"`
 }
 
@@ -67,6 +68,8 @@ func (server *Server) createUser(ctx *gin.Context) {
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}
+
+	fmt.Println(response)
 
 	ctx.JSON(http.StatusOK, response)
 }
