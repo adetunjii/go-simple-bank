@@ -21,4 +21,5 @@ type IRepository interface {
 	GetTransfer(ctx context.Context, id int64) (Transfer, error)
 	ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserDto) (User, error)
+	GetUser(ctx context.Context, username string) (User, error)
 }

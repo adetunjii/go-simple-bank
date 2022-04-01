@@ -18,10 +18,9 @@ import (
 	"testing"
 )
 
-
 // custom go matcher
 type eqCreateUserParamMatcher struct {
-	arg db2.CreateUserDto
+	arg      db2.CreateUserDto
 	password string
 }
 
@@ -48,23 +47,22 @@ func EqCreateUserDto(arg db2.CreateUserDto, password string) gomock.Matcher {
 	return eqCreateUserParamMatcher{arg, password}
 }
 
-
 func TestServer_CreateUser(t *testing.T) {
 	user, password := randomUser(t)
 
-	testCases := []struct{
-		name 				string
-		body				gin.H
-		buildStubs 			func(store *mockdb.MockIStore)
-		checkResponse		func(recorder *httptest.ResponseRecorder)
-	} {
+	testCases := []struct {
+		name          string
+		body          gin.H
+		buildStubs    func(store *mockdb.MockIStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
 		{
 			name: "OK",
-			body: gin.H {
-				"username": user.Username,
+			body: gin.H{
+				"username":  user.Username,
 				"full_name": user.FullName,
-				"password": password,
-				"email": user.Email,
+				"password":  password,
+				"email":     user.Email,
 			},
 			buildStubs: func(store *mockdb.MockIStore) {
 
@@ -94,7 +92,7 @@ func TestServer_CreateUser(t *testing.T) {
 			store := mockdb.NewMockIStore(ctrl)
 			testCase.buildStubs(store)
 
-			server := CreateNewServer(store)
+			server := NewTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			data, err := json.Marshal(testCase.body)
@@ -116,10 +114,10 @@ func randomUser(t *testing.T) (user db.User, password string) {
 	require.NoError(t, err)
 
 	user = db.User{
-		Username:       util.RandomOwnerName(),
-		Password:		 hashedPassword,
-		FullName:       util.RandomOwnerName(),
-		Email:          util.RandomEmail(),
+		Username: util.RandomOwnerName(),
+		Password: hashedPassword,
+		FullName: util.RandomOwnerName(),
+		Email:    util.RandomEmail(),
 	}
 	return
 }

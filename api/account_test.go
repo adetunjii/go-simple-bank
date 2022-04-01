@@ -108,7 +108,7 @@ func TestServer_GetAccountByID(t *testing.T) {
 			store := mockdb.NewMockIStore(ctrl)
 			testCase.buildStubs(store)
 
-			server := CreateNewServer(store)
+			server := NewTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts/%d", testCase.accountID)
@@ -130,21 +130,19 @@ func requireBodyMatch(t *testing.T, body *bytes.Buffer, account db.Account) {
 	require.NoError(t, err)
 }
 
-
 func TestServer_CreateAccount(t *testing.T) {
 	account := randomAccount()
 
-
 	testCases := []struct {
 		name          string
-		body 			gin.H
+		body          gin.H
 		buildStubs    func(store *mockdb.MockIStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			name:      "OK",
-			body: 		gin.H{
-				"owner": account.Owner,
+			name: "OK",
+			body: gin.H{
+				"owner":    account.Owner,
 				"currency": account.Currency,
 			},
 			buildStubs: func(store *mockdb.MockIStore) {
@@ -188,7 +186,7 @@ func TestServer_CreateAccount(t *testing.T) {
 			store := mockdb.NewMockIStore(ctrl)
 			testCase.buildStubs(store)
 
-			server := CreateNewServer(store)
+			server := NewTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			// Marshal body data to JSON

@@ -7,9 +7,7 @@ import (
 	"github.com/Adetunjii/simplebank/util"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"log"
-
 )
-
 
 func main() {
 	config, err := util.LoadConfig(".")
@@ -24,7 +22,10 @@ func main() {
 	}
 
 	store := db.CreateNewStore(connection)
-	server := api.CreateNewServer(store)
+	server, err := api.CreateNewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server")
+	}
 
 	err = server.StartServer(config.ServerAddress)
 	if err != nil {
