@@ -2,7 +2,9 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	db "github.com/Adetunjii/simplebank/db/repository"
+	"github.com/Adetunjii/simplebank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -11,7 +13,6 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner string 	`json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -23,10 +24,12 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateAccountDto{
-		Owner: req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
-		Balance: 0,
+		Balance:  0,
 	}
 
 	account, err := server.store.CreateAccount(ctx, arg)
@@ -34,9 +37,9 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 		if pgxErr, ok := err.(*pgconn.PgError); ok {
 			switch pgxErr.Code {
-				case pgerrcode.ForeignKeyViolation, pgerrcode.UniqueViolation:
-					ctx.JSON(http.StatusForbidden, errorResponse(err))
-					return
+			case pgerrcode.ForeignKeyViolation, pgerrcode.UniqueViolation:
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
 			}
 		}
 
@@ -59,6 +62,8 @@ func (server *Server) getAccountByID(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
 
@@ -71,13 +76,18 @@ func (server *Server) getAccountByID(ctx *gin.Context) {
 		return
 	}
 
+	if account.Owner != authPayload.Username {
+		err := errors.New("account doesn't belong to user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
-
 type listAccountRequest struct {
-	Page int32 	`form:"page" binding:"required,min=1"`
-	Size int32  `form:"size" binding:"required,min=10,max=20"`
+	Page int32 `form:"page" binding:"required,min=1"`
+	Size int32 `form:"size" binding:"required,min=10,max=20"`
 }
 
 func (server *Server) listAccounts(ctx *gin.Context) {
@@ -88,8 +98,11 @@ func (server *Server) listAccounts(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.ListAccountParams{
-		Limit: req.Page,
+		Owner:  authPayload.Username,
+		Limit:  req.Page,
 		Offset: (req.Page - 1) * req.Size,
 	}
 

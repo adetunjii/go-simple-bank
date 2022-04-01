@@ -184,6 +184,21 @@ func (mr *MockIStoreMockRecorder) GetTransfer(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransfer", reflect.TypeOf((*MockIStore)(nil).GetTransfer), arg0, arg1)
 }
 
+// GetUser mocks base method.
+func (m *MockIStore) GetUser(arg0 context.Context, arg1 string) (db.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
+	ret0, _ := ret[0].(db.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUser indicates an expected call of GetUser.
+func (mr *MockIStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockIStore)(nil).GetUser), arg0, arg1)
+}
+
 // ListAccounts mocks base method.
 func (m *MockIStore) ListAccounts(arg0 context.Context, arg1 db0.ListAccountParams) ([]db.Account, error) {
 	m.ctrl.T.Helper()

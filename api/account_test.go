@@ -8,6 +8,7 @@ import (
 	mockdb "github.com/Adetunjii/simplebank/db/mock"
 	db "github.com/Adetunjii/simplebank/db/models"
 	db2 "github.com/Adetunjii/simplebank/db/repository"
+	"github.com/Adetunjii/simplebank/token"
 	"github.com/Adetunjii/simplebank/util"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
@@ -16,12 +17,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
-func randomAccount() db.Account {
+func randomAccount(owner string) db.Account {
 	return db.Account{
 		ID:       util.RandomInt(1, 1000),
-		Owner:    util.RandomOwnerName(),
+		Owner:    owner,
 		Balance:  util.RandomBalance(),
 		Currency: util.RandomCurrency(),
 	}
@@ -35,17 +37,23 @@ func randomAccount() db.Account {
 
 */
 func TestServer_GetAccountByID(t *testing.T) {
-	account := randomAccount()
+
+	user, _ := randomUser(t)
+	account := randomAccount(user.Username)
 
 	testCases := []struct {
 		name          string
 		accountID     int64
+		setupAuth     func(t *testing.T, request *http.Request, factory token.TokenFactory)
 		buildStubs    func(store *mockdb.MockIStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, factory token.TokenFactory) {
+				addAuthorization(t, request, factory, "Bearer", user.Username, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockIStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -60,6 +68,9 @@ func TestServer_GetAccountByID(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, factory token.TokenFactory) {
+				addAuthorization(t, request, factory, "Bearer", user.Username, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockIStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -74,6 +85,9 @@ func TestServer_GetAccountByID(t *testing.T) {
 		{
 			name:      "BadRequest",
 			accountID: 0,
+			setupAuth: func(t *testing.T, request *http.Request, factory token.TokenFactory) {
+				addAuthorization(t, request, factory, "Bearer", user.Username, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockIStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Any()).
@@ -87,6 +101,9 @@ func TestServer_GetAccountByID(t *testing.T) {
 		{
 			name:      "InternalServerError",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, factory token.TokenFactory) {
+				addAuthorization(t, request, factory, "Bearer", user.Username, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockIStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -115,6 +132,7 @@ func TestServer_GetAccountByID(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
+			testCase.setupAuth(t, request, server.tokenFactory)
 			server.router.ServeHTTP(recorder, request)
 			testCase.checkResponse(t, recorder)
 		})
@@ -131,11 +149,13 @@ func requireBodyMatch(t *testing.T, body *bytes.Buffer, account db.Account) {
 }
 
 func TestServer_CreateAccount(t *testing.T) {
-	account := randomAccount()
+	user, _ := randomUser(t)
+	account := randomAccount(user.Username)
 
 	testCases := []struct {
 		name          string
 		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, factory token.TokenFactory)
 		buildStubs    func(store *mockdb.MockIStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -144,6 +164,9 @@ func TestServer_CreateAccount(t *testing.T) {
 			body: gin.H{
 				"owner":    account.Owner,
 				"currency": account.Currency,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, factory token.TokenFactory) {
+				addAuthorization(t, request, factory, "Bearer", user.Username, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockIStore) {
 
@@ -197,6 +220,7 @@ func TestServer_CreateAccount(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
 
+			testCase.setupAuth(t, request, server.tokenFactory)
 			server.router.ServeHTTP(recorder, request)
 			testCase.checkResponse(t, recorder)
 		})
