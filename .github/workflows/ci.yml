@@ -2,14 +2,11 @@ name: Simplebank-test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
-
-
+    branches: [master]
 
 jobs:
-
   test:
     name: Test
     runs-on: ubuntu-latest
